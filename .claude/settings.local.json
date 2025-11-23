@@ -4,7 +4,8 @@
       "Bash(yarn create next-app . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\")",
       "Bash(yarn install:*)",
       "Bash(yarn add:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(yarn build)"
     ],
     "deny": [],
     "ask": []

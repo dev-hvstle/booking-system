@@ -21,6 +21,7 @@ export interface Booking {
 export interface AvailableSlot {
   id: string;
   merchantId: string;
+  serviceId?: string; // Optional: if set, this slot is only for this service
   date: Date; // Specific date for this availability
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format
@@ -46,4 +47,26 @@ export interface BookingStats {
   cancelledBookings: number;
   monthlyRevenue: number;
   monthlyBookings: number;
+}
+
+export interface BlockedPeriod {
+  id: string;
+  merchantId: string;
+  startDate: Date;
+  endDate: Date;
+  reason?: string; // Optional reason for blocking (e.g., "Vacation", "Holiday")
+  createdAt: Date;
+}
+
+export interface Service {
+  id: string;
+  merchantId: string;
+  name: string;
+  description: string;
+  photos: string[]; // Array of image URLs
+  price: number;
+  duration: number; // in minutes
+  category?: string; // Optional category (e.g., "Haircut", "Massage", "Consultation")
+  isActive: boolean;
+  createdAt: Date;
 }

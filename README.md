@@ -22,7 +22,17 @@ A modern, full-stack calendar booking system built with Next.js 15, TypeScript, 
   - Total bookings and monthly bookings
   - Pending, completed, and cancelled bookings
   - Recent bookings table
-- **Calendar Management**: Configure available time slots by day of week
+- **Services Management**:
+  - Create and manage services with descriptions, photos, and pricing
+  - Set duration and category for each service
+  - Activate/deactivate services
+  - Service-specific availability tracking
+- **Calendar Management**:
+  - Configure available time slots by specific date
+  - Filter availability by service
+  - Assign time slots to specific services or keep general
+  - Bulk block date ranges (vacations, holidays, time off)
+  - View and manage blocked periods
 - **Pricing Management**: Create and manage multiple pricing tiers
 - **Real-time Updates**: All data syncs in real-time with Firestore
 
@@ -102,10 +112,12 @@ The application uses the following Firestore collections:
 {
   id: string;
   merchantId: string;        // User UID from Firebase Auth
-  dayOfWeek: number;         // 0-6 (Sunday-Saturday)
+  serviceId?: string;        // Optional: if set, slot is only for this service
+  date: Timestamp;           // Specific date for this availability
   startTime: string;         // HH:mm format
   endTime: string;           // HH:mm format
   isActive: boolean;
+  isRecurring?: boolean;     // If true, repeats weekly on this day
 }
 ```
 
@@ -119,6 +131,34 @@ The application uses the following Firestore collections:
   price: number;
   description: string;
   isActive: boolean;
+}
+```
+
+#### `blockedPeriods`
+```typescript
+{
+  id: string;
+  merchantId: string;        // User UID from Firebase Auth
+  startDate: Timestamp;      // Start of blocked period
+  endDate: Timestamp;        // End of blocked period
+  reason?: string;           // Optional reason (e.g., "Vacation", "Holiday")
+  createdAt: Timestamp;
+}
+```
+
+#### `services`
+```typescript
+{
+  id: string;
+  merchantId: string;        // User UID from Firebase Auth
+  name: string;              // Service name (e.g., "Premium Haircut")
+  description: string;       // Detailed description
+  photos: string[];          // Array of image URLs
+  price: number;             // Service price
+  duration: number;          // Duration in minutes
+  category?: string;         // Optional category (e.g., "Hair", "Spa")
+  isActive: boolean;
+  createdAt: Timestamp;
 }
 ```
 
@@ -146,6 +186,20 @@ service cloud.firestore {
 
     // Pricing Tiers - merchants can only manage their own tiers
     match /pricingTiers/{tier} {
+      allow read, write: if request.auth != null &&
+                         resource.data.merchantId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Blocked Periods - merchants can only manage their own blocked periods
+    match /blockedPeriods/{period} {
+      allow read, write: if request.auth != null &&
+                         resource.data.merchantId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Services - merchants can only manage their own services
+    match /services/{service} {
       allow read, write: if request.auth != null &&
                          resource.data.merchantId == request.auth.uid;
       allow create: if request.auth != null;
@@ -197,11 +251,21 @@ booking-system/
 
 1. **Sign Up/Login**: Navigate to `/login` to create an account or sign in
 2. **Dashboard**: View your booking statistics and recent bookings
-3. **Calendar Management**:
+3. **Services Management**:
+   - Go to the Services tab
+   - Add services with name, description, photos (URLs), pricing, and duration
+   - Set optional categories for organization
+   - Activate/deactivate services as needed
+   - Edit or delete services
+4. **Calendar Management**:
    - Go to the Calendar tab
-   - Add available time slots for each day of the week
+   - Filter calendar view by service (or view all services)
+   - Add available time slots for specific dates
+   - Optionally assign slots to specific services or keep general
    - Activate/deactivate or delete slots as needed
-4. **Pricing Management**:
+   - Use "Block Dates" to block date ranges (vacations, holidays)
+   - View and manage all blocked periods in the sidebar
+5. **Pricing Management**:
    - Go to the Pricing tab
    - Create pricing tiers with different durations and prices
    - Edit, activate/deactivate, or delete tiers
@@ -211,6 +275,7 @@ booking-system/
 - `/` - Landing page
 - `/login` - Merchant login/signup
 - `/admin` - Dashboard (protected)
+- `/admin/services` - Services management (protected)
 - `/admin/calendar` - Calendar management (protected)
 - `/admin/pricing` - Pricing management (protected)
 
@@ -335,6 +400,20 @@ service cloud.firestore {
 
     // Pricing Tiers - merchants can only manage their own tiers
     match /pricingTiers/{tier} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+                   request.resource.data.merchantId == request.auth.uid;
+    }
+
+    // Blocked Periods - merchants can only manage their own blocked periods
+    match /blockedPeriods/{period} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+                   request.resource.data.merchantId == request.auth.uid;
+    }
+
+    // Services - merchants can only manage their own services
+    match /services/{service} {
       allow read: if request.auth != null;
       allow write: if request.auth != null &&
                    request.resource.data.merchantId == request.auth.uid;

@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { AdminNav } from '@/components/AdminNav';
+import { AdminSidebar } from '@/components/AdminSidebar';
 
 export default function AdminLayout({
   children,
@@ -33,8 +33,11 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AdminNav />
-      <main>{children}</main>
+      <AdminSidebar />
+      {/* Main content with left margin to account for sidebar */}
+      <main className="lg:ml-64 min-h-screen">
+        {children}
+      </main>
     </div>
   );
 }

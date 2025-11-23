@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePricing } from '@/hooks/usePricing';
+import { ErrorMessage } from '@/components/ErrorMessage';
 
 export default function PricingManagement() {
   const { user } = useAuth();
-  const { tiers, loading, addTier, updateTier, deleteTier } = usePricing(user?.uid || null);
+  const { tiers, loading, error, addTier, updateTier, deleteTier } = usePricing(user?.uid || null);
   const [isAdding, setIsAdding] = useState(false);
   const [editingTier, setEditingTier] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -101,6 +102,18 @@ export default function PricingManagement() {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <h1 className="text-3xl font-bold mb-6">Pricing Management</h1>
+        <ErrorMessage
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
@@ -92,7 +93,7 @@ export default function LoginPage() {
             /* Forgot Password Form */
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we&apos;ll send you a link to reset your password.
               </p>
               <div>
                 <label htmlFor="reset-email" className="block text-sm font-medium mb-2">
@@ -209,12 +210,12 @@ export default function LoginPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <a
+          <Link
             href="/"
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

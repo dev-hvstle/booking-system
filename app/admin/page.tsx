@@ -3,10 +3,11 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useBookings } from '@/hooks/useBookings';
 import { useStats } from '@/hooks/useStats';
+import { ErrorMessage } from '@/components/ErrorMessage';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const { bookings, loading } = useBookings(user?.uid || null);
+  const { bookings, loading, error } = useBookings(user?.uid || null);
   const stats = useStats(bookings);
 
   if (loading) {
@@ -20,6 +21,18 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <h1 className="text-3xl font-bold mb-6">Dashboard Overview</h1>
+        <ErrorMessage
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
