@@ -1,8 +1,18 @@
 export interface Merchant {
-  id: string;
+  id: string; // Firebase Auth UID
   email: string;
-  businessName: string;
+  name: string; // Owner/merchant name
+  businessName: string; // Shop/business name
+  profilePicture?: string; // Profile picture URL (Firebase Storage)
+  coverPicture?: string; // Cover picture URL (Firebase Storage)
+  // Social media links
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  tiktok?: string;
+  website?: string;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export interface Booking {

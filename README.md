@@ -34,6 +34,11 @@ A modern, full-stack calendar booking system built with Next.js 15, TypeScript, 
   - Bulk block date ranges (vacations, holidays, time off)
   - View and manage blocked periods
 - **Pricing Management**: Create and manage multiple pricing tiers
+- **Profile Settings**:
+  - Edit merchant name and business name
+  - Upload profile picture and cover picture (Firebase Storage)
+  - Add social media links (Facebook, Instagram, Twitter, TikTok, Website)
+  - Manage account information
 - **Real-time Updates**: All data syncs in real-time with Firestore
 
 ## Tech Stack
@@ -43,6 +48,7 @@ A modern, full-stack calendar booking system built with Next.js 15, TypeScript, 
 - **Styling**: Tailwind CSS
 - **Database**: Firebase Firestore (NoSQL)
 - **Authentication**: Firebase Auth
+- **Storage**: Firebase Storage (for images)
 - **Hosting**: Vercel
 - **State Management**: React Context API
 - **Real-time Data**: Firebase Realtime Listeners
@@ -57,14 +63,18 @@ yarn install
 
 ### 2. Firebase Setup (Backend Only - No Hosting)
 
-**Important**: We're only using Firebase for Authentication and Database. Hosting is handled by Vercel.
+**Important**: We're using Firebase for Authentication, Database, and Storage. Hosting is handled by Vercel.
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Create a new project (name it whatever you like, e.g., "booknow-backend")
 3. **SKIP** Firebase Hosting setup - we don't need it
 4. Enable Authentication (Email/Password method)
 5. Create a Firestore Database
-6. Copy your Firebase configuration
+6. Enable Firebase Storage (for profile/cover images)
+   - Go to Storage in the Firebase Console
+   - Click "Get Started"
+   - Choose "Start in production mode" or "Start in test mode" (you'll set rules later)
+7. Copy your Firebase configuration
 
 See detailed step-by-step instructions in the [Firebase Setup Guide](#detailed-firebase-setup-guide) section below.
 
@@ -162,6 +172,25 @@ The application uses the following Firestore collections:
 }
 ```
 
+#### `merchants`
+```typescript
+{
+  id: string;                // User UID from Firebase Auth (document ID)
+  email: string;             // Merchant email
+  name: string;              // Merchant/owner name
+  businessName: string;      // Business/shop name
+  profilePicture?: string;   // Profile picture URL from Firebase Storage (optional)
+  coverPicture?: string;     // Cover picture URL from Firebase Storage (optional)
+  facebook?: string;         // Facebook page URL (optional)
+  instagram?: string;        // Instagram profile URL (optional)
+  twitter?: string;          // Twitter/X profile URL (optional)
+  tiktok?: string;           // TikTok profile URL (optional)
+  website?: string;          // Personal/business website URL (optional)
+  createdAt: Timestamp;
+  updatedAt?: Timestamp;     // Last update timestamp (optional)
+}
+```
+
 ### 5. Firestore Security Rules
 
 Add these security rules to your Firestore database:
@@ -204,11 +233,35 @@ service cloud.firestore {
                          resource.data.merchantId == request.auth.uid;
       allow create: if request.auth != null;
     }
+
+    // Merchants - users can only read/write their own profile
+    match /merchants/{userId} {
+      allow read, write: if request.auth != null &&
+                         request.auth.uid == userId;
+    }
   }
 }
 ```
 
-### 6. Run the Development Server
+### 6. Firebase Storage Rules
+
+Add these security rules to your Firebase Storage:
+
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Merchants folder - users can only upload to their own folder
+    match /merchants/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can read (for displaying images)
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 7. Run the Development Server
 
 ```bash
 yarn dev
